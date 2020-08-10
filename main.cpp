@@ -144,16 +144,17 @@ void splitTheContactIntoSeparateDataAndAddThemToTheAppriopiateFieldsOfTheObject 
         people.push_back(person);
 
 }
-int countTheNumberOfLlinesInATextFile()
+string gettingTheLastLineFromTheTextFile()
 {
-    string line;
-    int theAmountOfLines = 0;
-    ifstream file("adresaci.txt");
-    while (getline(file, line))
+    string lineFromTheAdressBook;
+    string gettingLine;
+    ifstream myfile ("adresaci.txt");
+    while (getline (myfile,lineFromTheAdressBook))
     {
-        ++theAmountOfLines;
+        gettingLine = lineFromTheAdressBook;
     }
-    return theAmountOfLines;
+    myfile.close();
+    return gettingLine;
 }
 void addTheContact(Person  person, vector < Person > &people, int idLoggedInUser)
 {
@@ -183,10 +184,12 @@ void addTheContact(Person  person, vector < Person > &people, int idLoggedInUser
     person.emailAddress = emailAddress;
     person.address = address;
 
-    string line;
-    int theAmountOfLines;
-    theAmountOfLines = countTheNumberOfLlinesInATextFile();
-    personId = theAmountOfLines + 1;
+    string theLastLineFromTheTextFile, stringTheLastContactIdInTheTextFile;
+    int theLastContactIdInTheTextFile;
+    theLastLineFromTheTextFile = gettingTheLastLineFromTheTextFile();
+    stringTheLastContactIdInTheTextFile = theLastLineFromTheTextFile.substr (0,1);
+    theLastContactIdInTheTextFile = atoi(stringTheLastContactIdInTheTextFile.c_str());
+    personId = theLastContactIdInTheTextFile + 1;
     fstream file;
     file.open("adresaci.txt", ios::out | ios::app);
     if (file.good())
@@ -331,6 +334,40 @@ void deleteContact(vector < Person > &people, Person person, int idLoggedInUser)
             if(confirmationOfRemoval == 'y')
             {
                 people.erase(people.begin()+ i);
+                int contactIdFromAdressBook;
+                fstream file;
+                file.open("adresaci.txt",ios::in);
+                if(file.good() == false)
+                    cout << "Could not open file adresaci.txt" << endl;
+                string theLineFromTheTextFile, contactIdFromTheLine, userIdFromTheLine;
+                string substr;
+                int userIdFromTheAdressBook;
+                ofstream temp("temp.txt");
+
+                while(getline(file, theLineFromTheTextFile))
+                {
+                    userIdFromTheLine = theLineFromTheTextFile.substr (2,3);
+                    userIdFromTheAdressBook = atoi(userIdFromTheLine.c_str());
+                    contactIdFromTheLine = theLineFromTheTextFile.substr (0,1);
+                    contactIdFromAdressBook = atoi(contactIdFromTheLine.c_str());
+                    if(contactIdFromAdressBook == contactIdWhichShouldBeDeleted)
+                    {
+                        if(userIdFromTheAdressBook != idLoggedInUser)
+                        {
+                            cout << "There is no such assigned contact" << endl;
+                            temp << theLineFromTheTextFile << endl;
+                            Sleep(2000);
+                        }
+                        else
+                            continue;
+                    }
+                    else
+                        temp << theLineFromTheTextFile << endl;
+                }
+                file.close();
+                temp.close();
+                remove("adresaci.txt");
+                rename( "temp.txt", "adresaci.txt" );
                 break;
             }
             else
@@ -341,40 +378,6 @@ void deleteContact(vector < Person > &people, Person person, int idLoggedInUser)
         }
         ++i;
     }
-    int contactIdFromAdressBook;
-    fstream file;
-    file.open("adresaci.txt",ios::in);
-    if(file.good() == false)
-        cout << "Could not open file adresaci.txt" << endl;
-    string theLineFromTheTextFile, contactIdFromTheLine, userIdFromTheLine;
-    string substr;
-    int userIdFromTheAdressBook;
-    ofstream temp("temp.txt");
-
-    while(getline(file, theLineFromTheTextFile))
-    {
-        userIdFromTheLine = theLineFromTheTextFile.substr (2,3);
-        userIdFromTheAdressBook = atoi(userIdFromTheLine.c_str());
-        contactIdFromTheLine = theLineFromTheTextFile.substr (0,1);
-        contactIdFromAdressBook = atoi(contactIdFromTheLine.c_str());
-        if(contactIdFromAdressBook == contactIdWhichShouldBeDeleted)
-        {
-            if(userIdFromTheAdressBook != idLoggedInUser)
-            {
-                cout << "There is no such assigned contact" << endl;
-                temp << theLineFromTheTextFile << endl;
-                Sleep(2000);
-            }
-            else
-                continue;
-        }
-        else
-            temp << theLineFromTheTextFile << endl;
-    }
-    file.close();
-    temp.close();
-    remove("adresaci.txt");
-    rename( "temp.txt", "adresaci.txt" );
 }
 void editContact(vector < Person > &people, Person person, int idLoggedInUser)
 {
